@@ -1,0 +1,62 @@
+#include<Servo.h>
+
+
+//Inicializamos los servos
+Servo aleronDerecho;
+Servo aleronIzquierdo;
+Servo timon;
+Servo elevador;
+
+//Pines de los servos
+int pinAleronDerecho = 12;
+int pinAleronIzquierdo = 11;
+int pinTimon = 10;
+int pinElevador = 9;
+
+//Establecemos los pulso a prueba-error
+int PULSOMAX = 2450;
+int PULSOMIN = 550;
+
+//Pines de los dos joysticks
+int pinJoystickDX = 0; // Joystick derecho, eje X
+int pinJoystickDY = 1; // Joystick derecho, eje y
+int pinJoystickIX = 2; // Joystick izquierdo, eje X
+
+//Declaro las variables que vamos a utilizar para leer
+//los valores de los joysticks
+int valorJoystickDX;
+int valorJoystickDY;
+int valorJoystickIX;
+
+//Declaro las variables que vamos a utilizar para angulos
+int anguloJoystickDX;
+int anguloJoystickDY;
+int anguloJoystickIX;
+
+
+
+void setup(){
+  aleronDerecho.attach(pinAleronDerecho, PULSOMIN, PULSOMAX);
+  aleronIzquierdo.attach(pinAleronIzquierdo, PULSOMIN, PULSOMAX);
+  timon.attach(pinTimon, PULSOMIN, PULSOMAX);
+  elevador.attach(pinElevador, PULSOMIN, PULSOMAX);
+}
+
+
+
+void loop(){
+  valorJoystickDX = analogRead(pinJoystickDX);
+  valorJoystickDY = analogRead(pinJoystickDY);
+  valorJoystickIX = analogRead(pinJoystickIX);
+  
+  anguloJoystickDX = map(valorJoystickDX, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JDX
+  anguloJoystickDY = map(valorJoystickDY, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JDY
+  anguloJoystickIX = map(valorJoystickIX, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JIX
+  
+  aleronDerecho.write(anguloJoystickDX);
+  aleronIzquierdo.write(180 - anguloJoystickDX);
+  timon.write(anguloJoystickIX);
+  elevador.write(anguloJoystickDY);
+  
+  delay(100);
+}
