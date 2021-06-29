@@ -1,5 +1,26 @@
 #include<Servo.h>
 
+//Esta funcion tiene la mision de "estabilizar" los valores
+//medidos en los potencimetros de los joysticks
+int estabilizarValor(int X){
+  if (X >= 480 && X <= 550){
+    X = 512;
+    return X;
+  }
+
+  if (X <= 13){
+    X = 0;
+    return X;
+  }
+
+  if (X >= 1014){
+    X = 1023;
+    return X;
+  }
+
+  return X;
+}
+
 
 //Inicializamos los servos
 Servo aleronDerecho;
@@ -33,8 +54,6 @@ int anguloJoystickDX;
 int anguloJoystickDY;
 int anguloJoystickIX;
 
-
-
 void setup(){
   aleronDerecho.attach(pinAleronDerecho, PULSOMIN, PULSOMAX);
   aleronIzquierdo.attach(pinAleronIzquierdo, PULSOMIN, PULSOMAX);
@@ -42,12 +61,10 @@ void setup(){
   elevador.attach(pinElevador, PULSOMIN, PULSOMAX);
 }
 
-
-
 void loop(){
-  valorJoystickDX = analogRead(pinJoystickDX);
-  valorJoystickDY = analogRead(pinJoystickDY);
-  valorJoystickIX = analogRead(pinJoystickIX);
+  valorJoystickDX = estabilizarValor(analogRead(pinJoystickDX));
+  valorJoystickDY = estabilizarValor(analogRead(pinJoystickDY));
+  valorJoystickIX = estabilizarValor(analogRead(pinJoystickIX));
   
   anguloJoystickDX = map(valorJoystickDX, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JDX
   anguloJoystickDY = map(valorJoystickDY, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JDY
