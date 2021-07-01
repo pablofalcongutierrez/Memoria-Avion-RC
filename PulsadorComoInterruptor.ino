@@ -21,7 +21,7 @@ void loop(){
     inicio = 1 - inicio;
     delay(50);
   }
-  
+  Serial.println(inicio);
   estadoFinal = estadoInicial;
 
   digitalWrite(pinLed, inicio);
