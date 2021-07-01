@@ -1,5 +1,7 @@
 #include<Servo.h>
 
+//Corriente maxima con solo servos 0.07 mA
+
 
 //Esta funcion tiene la mision de "estabilizar" los valores
 //medidos en los potencimetros de los joysticks
@@ -24,11 +26,12 @@ int estabilizarValor(int X){
 
 
 //Declaramos incognitas para que el pulsador funcione como interruptor
-float giro = 0.75;
+float giro = 0.60;
+int pinLed = 13;    //Para saber si esta activado
+int pinPulsador = 2;
 int inicio = 0;   //Esta incógnita nos va a decir si los alerones giran el 100% o el 70%
-int estadoInicial = 0;
-int estadoFinal = 0;
-int pinPulsador = 12; //Este sera el numero del pin del pulsador
+int estadoInicial = 1;
+int estadoFinal = 1;
 
 //Inicializamos los servos
 Servo aleronDerecho;
@@ -63,12 +66,16 @@ int anguloJoystickDY;
 int anguloJoystickIX;
 
 void setup(){
+
+  Serial.begin(9600);
+  
   aleronDerecho.attach(pinAleronDerecho, PULSOMIN, PULSOMAX);
   aleronIzquierdo.attach(pinAleronIzquierdo, PULSOMIN, PULSOMAX);
   timon.attach(pinTimon, PULSOMIN, PULSOMAX);
   elevador.attach(pinElevador, PULSOMIN, PULSOMAX);
 
   pinMode(pinPulsador, INPUT);
+  pinMode(pinLed, OUTPUT);
 }
 
 void loop(){
@@ -76,12 +83,14 @@ void loop(){
   //Lee el estado inicial del pulsador para ver si esta o no alimentado por la corriente
   estadoInicial = digitalRead(pinPulsador);
   
-  if (estadoInicial != estadoFinal){
-    estadoFinal = estadoInicial;
+  if (estadoInicial && estadoFinal == 0){
 
     //Solo varia entre 1 y 0, nunca sera negativo
     inicio = 1 - inicio;
+    delay(50);
   }
+
+  estadoFinal = estadoInicial;
   
   valorJoystickDX = estabilizarValor(analogRead(pinJoystickDX));
   valorJoystickDY = estabilizarValor(analogRead(pinJoystickDY));
@@ -91,12 +100,21 @@ void loop(){
   anguloJoystickDY = map(valorJoystickDY, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JDY
   anguloJoystickIX = map(valorJoystickIX, 0, 1023, 0, 180);  //Angulo entre 0 y 180, leido en el JIX
 
-  if(inicio == 0){
-    //El servo se abrira un 60%
-    anguloJoystickDX = abs(anguloJoystickDX - 90) * giro + 90;
-    anguloJoystickDY = abs(anguloJoystickDY - 90) * giro + 90;
-    anguloJoystickIX = abs(anguloJoystickIX - 90) * giro + 90;
+  if(inicio == 1){
+    //El servo se abrira un 50%
+    anguloJoystickDX = (anguloJoystickDX - 90) * giro + 90;
+    anguloJoystickDY = (anguloJoystickDY - 90) * giro + 90;
+    //Es posible que no haga falta girar menos el timon
+    //anguloJoystickIX = abs(anguloJoystickIX - 90) * giro + 90;
+
+    //Para saber si esta activado el modo suave
+    digitalWrite(pinLed, HIGH);
+  }else{
+    digitalWrite(pinLed, LOW);
   }
+
+  Serial.println(inicio);
+  
   aleronDerecho.write(anguloJoystickDX);
   aleronIzquierdo.write(180 - anguloJoystickDX);
   timon.write(anguloJoystickIX);
